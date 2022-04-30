@@ -145,12 +145,6 @@ namespace BMP
 		// DrawTriangle
 		// FillTriangle
 
-	private:
-		void _DrawCircle_putpixel(
-			const int& xc, const int& yc,
-			const int& x, const int& y,
-			const Color& color
-		);
 
 	public:
 		// Getters
