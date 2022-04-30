@@ -82,37 +82,44 @@ BITMAP::BITMAP(const char* fn, const uint32_t& w, const uint32_t& h, bool alpha)
 		padding = w % 4;
 		SetBitDepth(BIT_DEPTH::BD_24);
 	}
-	pixel_data.clear();
-	pixel_data.resize((channels * w + padding) * h, 0);
-	file_header.file_size = file_header.offset_data + (uint32_t)pixel_data.size();
+	vec_pixels.clear();
+	vec_pixels.resize((channels * w + padding) * h, 0);
+	file_header.file_size = file_header.offset_data + (uint32_t)vec_pixels.size();
 }
 
-void BITMAP::Read(const char* fn)
+bool BITMAP::Read(const char* fn)
 {
-	// load file into stream
-	basic_ifstream<BYTE> file(fn, ios::binary);
-	vector<BYTE> data(istreambuf_iterator<BYTE>(file), {});
+	// Open file with name fn
+	basic_ifstream<BYTE> infile(fn, ios::binary);
+	if (!infile.is_open())
+	{
+		return false; // Could not open file
+	}
 
-	// Load into file header
-	file_header.signature = UTILS::bytes_to_uint16(&data[0x0000]);
-	file_header.file_size = UTILS::bytes_to_uint32(&data[0x0002]);
-	file_header.reserved1 = UTILS::bytes_to_uint16(&data[0x0006]);
-	file_header.reserved2 = UTILS::bytes_to_uint16(&data[0x0008]);
-	file_header.offset_data = UTILS::bytes_to_uint32(&data[0x000A]);
+	// Create buffer to import data later passed onto BITMAP object
+	vector<BYTE> buffer(istreambuf_iterator<BYTE>(infile), {});
 
-	// Load into info header
-	info_header.header_size = UTILS::bytes_to_uint32(&data[0x000E]);
-	info_header.width = UTILS::bytes_to_uint32(&data[0x0012]);
-	info_header.height = UTILS::bytes_to_uint32(&data[0x0016]);
-	info_header.planes = UTILS::bytes_to_uint16(&data[0x001A]);
-	info_header.bits_per_pixel = UTILS::bytes_to_uint16(&data[0x001C]);
-	info_header.compression = UTILS::bytes_to_uint32(&data[0x001E]);
-	info_header.image_size = UTILS::bytes_to_uint32(&data[0x0022]);
-	info_header.x_res = UTILS::bytes_to_uint32(&data[0x0026]);
-	info_header.y_res = UTILS::bytes_to_uint32(&data[0x002A]);
-	info_header.colors_used = UTILS::bytes_to_uint32(&data[0x002E]);
-	info_header.colors_important = UTILS::bytes_to_uint32(&data[0x0032]);
+	// Load into file header struct
+	file_header.signature = UTILS::bytes_to_uint16(&buffer[0x0000]);
+	file_header.file_size = UTILS::bytes_to_uint32(&buffer[0x0002]);
+	file_header.reserved1 = UTILS::bytes_to_uint16(&buffer[0x0006]);
+	file_header.reserved2 = UTILS::bytes_to_uint16(&buffer[0x0008]);
+	file_header.offset_data = UTILS::bytes_to_uint32(&buffer[0x000A]);
 
+	// Load into info header struct
+	info_header.header_size = UTILS::bytes_to_uint32(&buffer[0x000E]);
+	info_header.width = UTILS::bytes_to_uint32(&buffer[0x0012]);
+	info_header.height = UTILS::bytes_to_uint32(&buffer[0x0016]);
+	info_header.planes = UTILS::bytes_to_uint16(&buffer[0x001A]);
+	info_header.bits_per_pixel = UTILS::bytes_to_uint16(&buffer[0x001C]);
+	info_header.compression = UTILS::bytes_to_uint32(&buffer[0x001E]);
+	info_header.image_size = UTILS::bytes_to_uint32(&buffer[0x0022]);
+	info_header.x_res = UTILS::bytes_to_uint32(&buffer[0x0026]);
+	info_header.y_res = UTILS::bytes_to_uint32(&buffer[0x002A]);
+	info_header.colors_used = UTILS::bytes_to_uint32(&buffer[0x002E]);
+	info_header.colors_important = UTILS::bytes_to_uint32(&buffer[0x0032]);
+
+	// Set color depth
 	switch (info_header.bits_per_pixel)
 	{
 	case 24:
@@ -125,12 +132,23 @@ void BITMAP::Read(const char* fn)
 		cout << "Unsupported bit depth: " << info_header.bits_per_pixel << endl;
 	}
 
-	LoadFromByteArray(&data[file_header.offset_data], file_header.file_size - file_header.offset_data);
+	// Load remaining data in buffer into 
+	LoadFromByteArray(&buffer[file_header.offset_data], file_header.file_size - file_header.offset_data);
+
+	return true;
 }
 
-void BITMAP::Write(const char* fn)
+bool BITMAP::Write(const char* fn) const
 {
+	// Open/Create new file with name stored in fn
+	ofstream outfile(fn, ios::binary);
+
+	if (!outfile.is_open())
+		return false; // Could not open/create file
+
+	// Create byte buffer to store output data
 	vector<BYTE> buffer(file_header.file_size);
+
 	// Write file header data
 	memcpy(&buffer[0x0000], UTILS::uint16_to_bytes(file_header.signature), 2 * sizeof(BYTE));
 	memcpy(&buffer[0x0002], UTILS::uint32_to_bytes(file_header.file_size), 4 * sizeof(BYTE));
@@ -154,13 +172,16 @@ void BITMAP::Write(const char* fn)
 	memcpy(&buffer[0x0032], UTILS::uint32_to_bytes(info_header.colors_important), 4 * sizeof(BYTE));
 
 	// write pixel data
-	memcpy(&buffer[file_header.offset_data], &pixel_data[0], pixel_data.size() * sizeof(BYTE));
+	memcpy(&buffer[file_header.offset_data], &vec_pixels[0], vec_pixels.size() * sizeof(BYTE));
 
-	ofstream outfile(fn, ios::binary);
 	outfile.write((const char*)&buffer[0], buffer.size());
+	if (outfile.good())
+		return true; // Successfully wrote to file
+	else
+		return false; // Failed to write to file
 }
 
-void BITMAP::SetPixel(uint32_t x, uint32_t y, Color color)
+void BITMAP::SetPixel(int x, int y, const Color& color)
 {
 	uint32_t w = info_header.width;
 	uint32_t h = info_header.height;
@@ -177,25 +198,25 @@ void BITMAP::SetPixel(uint32_t x, uint32_t y, Color color)
 	{
 		int padding = w % 4;
 		int idx = 3 * (y * w + x) + y * padding;
-		pixel_data[idx + 0] = color.blue;
-		pixel_data[idx + 1] = color.green;
-		pixel_data[idx + 2] = color.red;
+		vec_pixels[idx + 0] = color.blue;
+		vec_pixels[idx + 1] = color.green;
+		vec_pixels[idx + 2] = color.red;
 		break;
 	}
 	case BIT_DEPTH::BD_32:
 	{
 		int idx = 4 * (y * w + x);
-		pixel_data[idx + 0] = color.blue;
-		pixel_data[idx + 1] = color.green;
-		pixel_data[idx + 2] = color.red;
-		pixel_data[idx + 3] = color.alpha;
+		vec_pixels[idx + 0] = color.blue;
+		vec_pixels[idx + 1] = color.green;
+		vec_pixels[idx + 2] = color.red;
+		vec_pixels[idx + 3] = color.alpha;
 		break;
 	}
 	}
 
 }
 
-void BITMAP::SetBitDepth(BIT_DEPTH bd)
+void BITMAP::SetBitDepth(const BIT_DEPTH& bd)
 {
 	bit_depth = bd;
 	switch (bd)
@@ -209,7 +230,7 @@ void BITMAP::SetBitDepth(BIT_DEPTH bd)
 	}
 }
 
-void BITMAP::Fill(Color color)
+void BITMAP::Fill(const Color& color)
 {
 	uint32_t h = Height();
 	uint32_t w = Width();
@@ -219,8 +240,11 @@ void BITMAP::Fill(Color color)
 			SetPixel(x, y, color);
 }
 
-// Implements Bresenham's line algorithm (https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
-void BMP::BITMAP::DrawLine(int sx, int sy, int ex, int ey, Color color)
+void BMP::BITMAP::DrawLine(
+	int sx, int sy,
+	int ex, int ey,
+	Color color
+)
 {
 	int dx = ex - sx;
 	int dy = ey - sy;
@@ -304,7 +328,11 @@ void BMP::BITMAP::DrawLine(int sx, int sy, int ex, int ey, Color color)
 	}
 }
 
-void BMP::BITMAP::DrawRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, Color color)
+void BMP::BITMAP::DrawRect(
+	const int& x, const int& y,
+	const int& w, const int& h,
+	const Color& color
+)
 {
 	DrawLine(x, y, x + w, y, color);
 	DrawLine(x, y, x, y + h, color);
@@ -312,14 +340,89 @@ void BMP::BITMAP::DrawRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, Color
 	DrawLine(x, y + h, x + w, y + h, color);
 }
 
-void BMP::BITMAP::FillRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, Color color)
+void BMP::BITMAP::FillRect(
+	const int& x, const int& y,
+	const int& w, const int& h,
+	const Color& color
+)
 {
 	for (int yi = (int)(y + h); yi >= (int)y; yi--)
 		for (int xi = x; xi <= (int)(x + w); xi++)
 			SetPixel(xi, yi, color);
 }
 
-Color BITMAP::GetPixelColor(uint32_t x, uint32_t y)
+void BMP::BITMAP::DrawCircle(
+	const int& xc, const int& yc,
+	const int& r,
+	const Color& color
+)
+{
+	auto setpixel_all_octants = [&](const int& x, const int& y)
+	{
+		SetPixel(xc + x, yc + y, color);
+		SetPixel(xc - x, yc + y, color);
+		SetPixel(xc + x, yc - y, color);
+		SetPixel(xc - x, yc - y, color);
+		SetPixel(xc + y, yc + x, color);
+		SetPixel(xc - y, yc + x, color);
+		SetPixel(xc + y, yc - x, color);
+		SetPixel(xc - y, yc - x, color);
+	};
+
+	int y = r;
+	int x = 0;
+	int D = 3 - (2 * r);
+	setpixel_all_octants(x, y);
+	while (y >= x++)
+	{
+		if (D > 0)
+		{
+			y--;
+			D += 4 * (x - y) + 10;
+		}
+		else
+		{
+			D += 4 * x + 6;
+		}
+		setpixel_all_octants(x, y);
+	}
+}
+
+void BMP::BITMAP::FillCircle(
+	const int& xc, const int& yc,
+	const int& r,
+	const Color& color
+)
+{
+	auto line_drawing_helper = [&](const int& x, const int& y)
+	{
+		DrawLine(xc - x, yc + y, xc + x, yc + y, color);
+		DrawLine(xc - x, yc - y, xc + x, yc - y, color);
+		DrawLine(xc - y, yc + x, xc + y, yc + x, color);
+		DrawLine(xc - y, yc - x, xc + y, yc - x, color);
+	};
+
+	int y = r;
+	int x = 0;
+	int D = 3 - (2 * r);
+	line_drawing_helper(x, y);
+	while (y >= x++)
+	{
+		if (D > 0)
+		{
+			y--;
+			D += 4 * (x - y) + 10;
+		}
+		else
+		{
+			D += 4 * x + 6;
+		}
+		line_drawing_helper(x, y);
+	}
+}
+
+
+Color BITMAP::GetPixelColor(const int& x, const int& y) const
 {
 	if (x * y > info_header.width * info_header.height || x * y < 0)
 	{
@@ -329,14 +432,15 @@ Color BITMAP::GetPixelColor(uint32_t x, uint32_t y)
 	}
 
 	int index = 3 * (y * info_header.width + x);
-	return Color{ pixel_data[index + 2], pixel_data[index + 1], pixel_data[index + 0] };
+	return Color{ vec_pixels[index + 2], vec_pixels[index + 1], vec_pixels[index + 0] };
 }
 
 void BITMAP::LoadFromByteArray(BYTE* data, int n)
 {
-	pixel_data.clear();
+	vec_pixels.clear();
+	vec_pixels.resize(n, 0);
 	for (int i = 0; i < n; i++)
-		pixel_data.push_back(data[i]);
+		vec_pixels[i] = data[i];
 }
 
 //---------------------------------------//

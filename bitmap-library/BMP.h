@@ -88,41 +88,77 @@ namespace BMP
 	public: // change to protected later
 		FileHeader file_header;
 		Infoheader info_header;
-		vector<BYTE> pixel_data;
+		vector<BYTE> vec_pixels;
 		const char* filename;
 		BIT_DEPTH bit_depth;
 
 	public:
-		BITMAP(const char* fn) : filename(fn) { Read(fn); }
-		BITMAP() : filename("my_bitmap.bmp"), bit_depth(BIT_DEPTH::BD_24) { file_header = FileHeader{}, info_header = Infoheader{}; }
-		BITMAP(const char* fn, const uint32_t& w, const uint32_t& h, bool alpha = true);
+		BITMAP(const char* fn = "img.bmp")
+		{
+			filename = fn;
+			bit_depth = BIT_DEPTH::BD_24;
+			file_header = FileHeader{};
+			info_header = Infoheader{};
+		}
+		BITMAP(
+			const char* fn,
+			const uint32_t& w,
+			const uint32_t& h,
+			bool alpha = true
+		);
 
 	public:
-		void Read(const char* fn);
-		void Write(const char* fn);
-		void Save() { Write(filename); }
+		bool Read(const char* fn);
+		bool Write(const char* fn) const;
+		bool Save() const { return Write(filename); }
 
 	public:
 		// Setters
-		void SetPixel(uint32_t x, uint32_t y, Color color);
-		void SetBitDepth(BIT_DEPTH);
+		void SetPixel(int x, int y, const Color& color);
+		void SetBitDepth(const BIT_DEPTH& bd);
 		void SetFileName(const char* fn) { filename = fn; }
 
 
 	public:
 		// Drawing routines
-		void Fill(Color color);
-		void DrawLine(int sx, int sy, int ex, int ey, Color color);
-		void DrawRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, Color color);
-		void FillRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, Color color);
+		void Fill(const Color& color);
+		void DrawLine(						// Implements Bresenham's line algorithm (https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
+			int sx, int sy,
+			int ex, int ey,
+			Color color);
+		void DrawRect(
+			const int& x, const int& y,
+			const int& w, const int& h,
+			const Color& color);
+		void FillRect(
+			const int& x, const int& y,
+			const int& w, const int& h,
+			const Color& color);
+		void DrawCircle(					// Implements Bresenham's circle algorithm (https://iq.opengenus.org/bresenhams-circle-drawing-algorithm/)
+			const int& xc, const int& yc,
+			const int& r,
+			const Color& color);
+		void FillCircle(
+			const int& xc, const int& yc,
+			const int& r,
+			const Color& color);
+		// DrawTriangle
+		// FillTriangle
+
+	private:
+		void _DrawCircle_putpixel(
+			const int& xc, const int& yc,
+			const int& x, const int& y,
+			const Color& color
+		);
 
 	public:
 		// Getters
-		Color GetPixelColor(uint32_t x, uint32_t y);
-		uint32_t Width() { return info_header.width; }
-		uint32_t Height() { return info_header.height; }
-		uint32_t GetFileSize() { return file_header.file_size; }
-		BIT_DEPTH GetBitDepth() { return bit_depth; }
+		Color GetPixelColor(const int& x, const int& y) const;
+		uint32_t Width() const { return info_header.width; }
+		uint32_t Height() const { return info_header.height; }
+		uint32_t GetFileSize() const { return file_header.file_size; }
+		BIT_DEPTH GetBitDepth() const { return bit_depth; }
 
 	public:
 		void LoadFromByteArray(BYTE* data, int n);
