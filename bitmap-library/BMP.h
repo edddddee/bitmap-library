@@ -108,8 +108,13 @@ namespace BMP
 		void SetBitDepth(BIT_DEPTH);
 		void SetFileName(const char* fn) { filename = fn; }
 
+
 	public:
+		// Drawing routines
 		void Fill(Color color);
+		void DrawLine(int sx, int sy, int ex, int ey, Color color);
+		void DrawRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, Color color);
+		void FillRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, Color color);
 
 	public:
 		// Getters

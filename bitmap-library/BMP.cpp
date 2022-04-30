@@ -164,7 +164,7 @@ void BITMAP::SetPixel(uint32_t x, uint32_t y, Color color)
 {
 	uint32_t w = info_header.width;
 	uint32_t h = info_header.height;
-
+	y = h - y - 1;
 	if (x * y < 0 || x >= w || y >= h)
 	{
 		cout << "Error: Pixel (" << x << ", " << y << ") is out of bounds." << endl;
@@ -213,9 +213,110 @@ void BITMAP::Fill(Color color)
 {
 	uint32_t h = Height();
 	uint32_t w = Width();
-	for (uint32_t y = 0; y < h; y++)
-		for (uint32_t x = 0; x < w; x++)
+	// x as inner loop for better performance
+	for (int y = (int)h - 1; y >= 0; y--)
+		for (int x = 0; x < (int)w; x++)
 			SetPixel(x, y, color);
+}
+
+// Implements Bresenham's line algorithm (https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
+void BMP::BITMAP::DrawLine(int sx, int sy, int ex, int ey, Color color)
+{
+	int dx = ex - sx;
+	int dy = ey - sy;
+
+	if (dx < 0)
+	{
+		swap(sx, ex);
+		swap(sy, ey);
+		dx = -dx;
+		dy = -dy;
+	}
+	// Horizontal line
+	if (dy == 0)
+	{
+		for (; sx <= ex; sx++)
+			SetPixel(sx, sy, color);
+	}
+	// Vertical line
+	else if (dx == 0)
+	{
+		if (dy < 0)
+			swap(sy, ey);
+		for (; sy <= ey; sy++)
+			SetPixel(sx, sy, color);
+	}
+	// Slope -1 <= m <= 1
+	else if (abs(dx) >= abs(dy))
+	{
+		int y_inc = 1;
+		if (dy < 0)
+		{
+			y_inc = -1;
+			dy = -dy;
+		}
+		int D = 2 * dy - dx;
+		for (; sx <= ex; sx++)
+		{
+			SetPixel(sx, sy, color);
+			if (D > 0)
+			{
+				D += 2 * (dy - dx);
+				sy += y_inc;
+			}
+			else
+			{
+				D += 2 * dy;
+			}
+		}
+	}
+	// Slope abs(m) > 1
+	else
+	{
+		if (dy < 0)
+		{
+			swap(sy, ey);
+			swap(sx, ex);
+			dy = -dy;
+			dx = -dx;
+		}
+		int x_inc = 1;
+		if (dx < 0)
+		{
+			x_inc = -1;
+			dx = -dx;
+		}
+		int D = 2 * dx - dy;
+		for (; sy <= ey; sy++)
+		{
+			SetPixel(sx, sy, color);
+			if (D > 0)
+			{
+				D += 2 * (dx - dy);
+				sx += x_inc;
+			}
+			else
+			{
+				D += 2 * dx;
+			}
+		}
+
+	}
+}
+
+void BMP::BITMAP::DrawRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, Color color)
+{
+	DrawLine(x, y, x + w, y, color);
+	DrawLine(x, y, x, y + h, color);
+	DrawLine(x + w, y, x + w, y + h, color);
+	DrawLine(x, y + h, x + w, y + h, color);
+}
+
+void BMP::BITMAP::FillRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, Color color)
+{
+	for (int yi = (int)(y + h); yi >= (int)y; yi--)
+		for (int xi = x; xi <= (int)(x + w); xi++)
+			SetPixel(xi, yi, color);
 }
 
 Color BITMAP::GetPixelColor(uint32_t x, uint32_t y)

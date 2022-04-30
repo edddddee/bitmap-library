@@ -2,9 +2,10 @@
 
 int main()
 {
-	// Creates 1920x1080 uncompressed 24-bit RGB bitmap with all pixels set to magenta rgb(255, 0, 255)
-	BMP::BITMAP myBMP("mybitmap.bmp", 1920, 1080, false);
-	myBMP.Fill(BMP::Color{ 255,0,255 });
+
+	BMP::BITMAP myBMP("mybitmap.bmp", 1000, 1000, false);
+	myBMP.Fill(BMP::Color{ 255,255,255 });
+	myBMP.FillRect(200, 400, 600, 200, BMP::Color{ 0,0,255 });
 	myBMP.Save();
 
 	return 0;
