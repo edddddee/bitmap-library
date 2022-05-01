@@ -167,17 +167,31 @@ bool BITMAP::Write(const char* fn) const
 		return false; // Failed to write to file
 }
 
+
+void BITMAP::SetBitDepth(const BIT_DEPTH& bd)
+{
+	bit_depth = bd;
+	switch (bd)
+	{
+	case BIT_DEPTH::BD_24:
+		info_header.bits_per_pixel = 24;
+		break;
+	case BIT_DEPTH::BD_32:
+		info_header.bits_per_pixel = 32;
+		break;
+	}
+}
+
+
+
 void BITMAP::SetPixel(int x, int y, const Color& color)
 {
 	int w = (int)info_header.width;
 	int h = (int)info_header.height;
 	y = h - y - 1;
-	if (x * y < 0 || x >= w || y >= h)
-	{
-		cout << "Error: Pixel (" << x << ", " << y << ") is out of bounds." << endl;
-		cout << "Dimensions are (width, height) = (" << info_header.width << ", " << info_header.height << ")" << endl;
+	if (x < 0 || y < 0 || x >= w || y >= h) // Pixel coordinate outside of bitmap
 		return;
-	}
+
 	switch (bit_depth)
 	{
 	case BIT_DEPTH::BD_24:
@@ -200,20 +214,6 @@ void BITMAP::SetPixel(int x, int y, const Color& color)
 	}
 	}
 
-}
-
-void BITMAP::SetBitDepth(const BIT_DEPTH& bd)
-{
-	bit_depth = bd;
-	switch (bd)
-	{
-	case BIT_DEPTH::BD_24:
-		info_header.bits_per_pixel = 24;
-		break;
-	case BIT_DEPTH::BD_32:
-		info_header.bits_per_pixel = 32;
-		break;
-	}
 }
 
 void BITMAP::Fill(const Color& color)
