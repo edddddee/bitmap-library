@@ -13,6 +13,12 @@ typedef uint8_t BYTE;
 
 namespace BMP
 {
+	struct Vertex
+	{
+		int x;
+		int y;
+	};
+
 	struct Color
 	{
 		uint8_t red{ 0 };
@@ -122,7 +128,8 @@ namespace BMP
 	public:
 		// Drawing routines
 		void Fill(const Color& color);
-		void DrawLine(						// Implements Bresenham's line algorithm (https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
+		// Implements Bresenham's line algorithm (https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
+		void DrawLine(
 			int sx, int sy,
 			int ex, int ey,
 			Color color);
@@ -134,7 +141,8 @@ namespace BMP
 			const int& x, const int& y,
 			const int& w, const int& h,
 			const Color& color);
-		void DrawCircle(					// Implements Bresenham's circle algorithm (https://iq.opengenus.org/bresenhams-circle-drawing-algorithm/)
+		// Implements Bresenham's circle algorithm (https://iq.opengenus.org/bresenhams-circle-drawing-algorithm/)
+		void DrawCircle(
 			const int& xc, const int& yc,
 			const int& r,
 			const Color& color);
@@ -142,8 +150,27 @@ namespace BMP
 			const int& xc, const int& yc,
 			const int& r,
 			const Color& color);
-		// DrawTriangle
-		// FillTriangle
+		void DrawTriangle(
+			const int& x1, const int& y1,
+			const int& x2, const int& y2,
+			const int& x3, const int& y3,
+			const Color& color
+		);
+		// Implements Bresenham's triangle rasterization algorithm (http://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html#algo2)
+		void FillTriangle(
+			const int& x1, const int& y1,
+			const int& x2, const int& y2,
+			const int& x3, const int& y3,
+			const Color& color
+		);
+
+		void DrawLine(const Vertex& vStart, const Vertex& vEnd, const Color& color);
+		void DrawRect(const Vertex& vTopLeft, const Vertex& vSize, const Color& color);
+		void FillRect(const Vertex& vTopLeft, const Vertex& vSize, const Color& color);
+		void DrawCircle(const Vertex& vCenter, const int& r, const Color& color);
+		void FillCircle(const Vertex& vCenter, const int& r, const Color& color);
+		void DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Color& color);
+		void FillTriangle(Vertex v1, Vertex v2, Vertex v3, const Color& color);
 
 
 	public:
