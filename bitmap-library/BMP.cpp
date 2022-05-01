@@ -40,20 +40,6 @@ BYTE* UTILS::uint16_to_bytes(uint16_t data)
 	return result;
 }
 
-BYTE* UTILS::palette_to_bytes(vector<Color> palette)
-{
-	size_t n = palette.size();
-	BYTE* result = new BYTE[4 * n];
-	for (auto i = 0; i < 4 * n; i += 4)
-	{
-		result[i + 0] = palette[i].red;
-		result[i + 1] = palette[i].green;
-		result[i + 2] = palette[i].blue;
-		result[i + 3] = 0;
-	}
-	return result;
-}
-
 //-------------------------------------------//
 //     END BMP UTIL FUNCTION DEFINITIONS     //
 //-------------------------------------------//
@@ -332,10 +318,10 @@ void BMP::BITMAP::DrawRect(
 	const int& w, const int& h,
 	const Color& color)
 {
-	DrawLine(x, y, x + w, y, color);
-	DrawLine(x, y, x, y + h, color);
-	DrawLine(x + w, y, x + w, y + h, color);
-	DrawLine(x, y + h, x + w, y + h, color);
+	DrawLine(x, y, x + w - 1, y, color);
+	DrawLine(x, y, x, y + h - 1, color);
+	DrawLine(x + w - 1, y, x + w - 1, y + h - 1, color);
+	DrawLine(x, y + h - 1, x + w - 1, y + h - 1, color);
 }
 
 void BMP::BITMAP::FillRect(
@@ -343,8 +329,8 @@ void BMP::BITMAP::FillRect(
 	const int& w, const int& h,
 	const Color& color)
 {
-	for (int yi = (int)(y + h); yi >= (int)y; yi--)
-		for (int xi = x; xi <= (int)(x + w); xi++)
+	for (int yi = (int)(y + h - 1); yi >= (int)y; yi--)
+		for (int xi = x; xi <= (int)(x + w - 1); xi++)
 			SetPixel(xi, yi, color);
 }
 

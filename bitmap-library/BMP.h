@@ -36,13 +36,13 @@ namespace BMP
 
 	struct FileHeader
 	{
-		uint16_t signature{ 0x4D42 }; // 2 bytes, should be "BM" when cast to ascii
+		uint16_t signature{ 0x4D42 }; // 2 bytes, "BM" in ascii
 		uint32_t file_size;
 		uint16_t reserved1{ 0 };
 		uint16_t reserved2{ 0 };
 		uint32_t offset_data{ 54 };
 
-		void Print()
+		void Print() // For debugging puposes
 		{
 			int w = 12;
 			cout.width(w);
@@ -83,8 +83,6 @@ namespace BMP
 		BYTE* uint32_to_bytes(uint32_t data);
 
 		BYTE* uint16_to_bytes(uint16_t data);
-
-		BYTE* palette_to_bytes(vector<Color> palette);
 	}
 
 	enum class BIT_DEPTH { BD_24, BD_32 };
