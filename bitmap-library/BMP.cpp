@@ -76,14 +76,15 @@ BITMAP::BITMAP(const char* fn, const uint32_t& w, const uint32_t& h, bool alpha)
 bool BITMAP::Read(const char* fn)
 {
 	// Open file with name fn
-	basic_ifstream<BYTE> infile(fn, ios::binary);
+	std::basic_ifstream<BYTE> infile(fn, std::ios::binary);
 	if (!infile.is_open())
 	{
-		return false; // Could not open file
+		std::cout << "Failed to read " << fn << "\n";
+		return false;
 	}
 
 	// Create buffer to import data later passed onto BITMAP object
-	vector<BYTE> buffer(istreambuf_iterator<BYTE>(infile), {});
+	std::vector<BYTE> buffer(std::istreambuf_iterator<BYTE>(infile), {});
 
 	// Load into file header struct
 	file_header.signature = UTILS::bytes_to_uint16(&buffer[0x0000]);
@@ -115,7 +116,7 @@ bool BITMAP::Read(const char* fn)
 		bit_depth = BIT_DEPTH::BD_32;
 		break;
 	default:
-		cout << "Unsupported bit depth: " << info_header.bits_per_pixel << endl;
+		std::cout << "Unsupported bit depth: " << info_header.bits_per_pixel << "\n";
 	}
 
 	// Load remaining data in buffer into 
@@ -127,13 +128,13 @@ bool BITMAP::Read(const char* fn)
 bool BITMAP::Write(const char* fn) const
 {
 	// Open/Create new file with name stored in fn
-	ofstream outfile(fn, ios::binary);
+	std::ofstream outfile(fn, std::ios::binary);
 
 	if (!outfile.is_open())
 		return false; // Could not open/create file
 
 	// Create byte buffer to store output data
-	vector<BYTE> buffer(file_header.file_size);
+	std::vector<BYTE> buffer(file_header.file_size);
 
 	// Write file header data
 	memcpy(&buffer[0x0000], UTILS::uint16_to_bytes(file_header.signature), 2 * sizeof(BYTE));
@@ -162,11 +163,17 @@ bool BITMAP::Write(const char* fn) const
 
 	outfile.write((const char*)&buffer[0], buffer.size());
 	if (outfile.good())
-		return true; // Successfully wrote to file
+	{
+		std::cout << "Bitmap saved to " << filename << "\n";
+		return true;
+	}
 	else
-		return false; // Failed to write to file
-}
+	{
+		std::cout << "Failed to save " << filename << "\n";
+		return false;
+	}
 
+}
 
 void BITMAP::SetBitDepth(const BIT_DEPTH& bd)
 {
@@ -236,8 +243,8 @@ void BMP::BITMAP::DrawLine(
 
 	if (dx < 0)
 	{
-		swap(sx, ex);
-		swap(sy, ey);
+		std::swap(sx, ex);
+		std::swap(sy, ey);
 		dx = -dx;
 		dy = -dy;
 	}
@@ -251,7 +258,7 @@ void BMP::BITMAP::DrawLine(
 	else if (dx == 0)
 	{
 		if (dy < 0)
-			swap(sy, ey);
+			std::swap(sy, ey);
 		for (; sy <= ey; sy++)
 			SetPixel(sx, sy, color);
 	}
@@ -284,8 +291,8 @@ void BMP::BITMAP::DrawLine(
 	{
 		if (dy < 0)
 		{
-			swap(sy, ey);
-			swap(sx, ex);
+			std::swap(sy, ey);
+			std::swap(sx, ex);
 			dy = -dy;
 			dx = -dx;
 		}
@@ -453,11 +460,11 @@ void BMP::BITMAP::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex&
 void BMP::BITMAP::FillTriangle(Vertex v1, Vertex v2, Vertex v3, const Color& color)
 {
 	if (v2.y < v1.y)
-		swap(v1, v2);
+		std::swap(v1, v2);
 	if (v3.y < v1.y)
-		swap(v1, v3);
+		std::swap(v1, v3);
 	if (v3.y < v2.y)
-		swap(v2, v3);
+		std::swap(v2, v3);
 
 	int h = (int)info_header.height;
 
@@ -561,10 +568,12 @@ void BMP::BITMAP::FillTriangle(Vertex v1, Vertex v2, Vertex v3, const Color& col
 
 Color BITMAP::GetPixelColor(const int& x, const int& y) const
 {
-	if (x * y > (int)(info_header.width * info_header.height) || x * y < 0)
+	int w = (int)info_header.width;
+	int h = (int)info_header.height;
+	if (x < 0 || y < 0 || x >= w || y >= h)
 	{
-		cout << "Error: Pixel (" << x << ", " << y << ") is out of bounds." << endl;
-		cout << "Dimensions are (width, height) = (" << info_header.width << ", " << info_header.height << ")" << endl;
+		std::cout << "Error: Pixel (" << x << ", " << y << ") is out of bounds.\n";
+		std::cout << "Dimensions are (width, height) = (" << info_header.width << ", " << info_header.height << ")\n";
 		return Color{ 0,0,0 };
 	}
 

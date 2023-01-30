@@ -4,10 +4,9 @@
 #include <iterator>
 #include <vector>
 #include <string>
-#include <stdint.h>
 #include <cmath>
 
-using namespace std;
+
 
 typedef uint8_t BYTE;
 
@@ -24,7 +23,7 @@ namespace BMP
 		uint8_t red{ 0 };
 		uint8_t green{ 0 };
 		uint8_t blue{ 0 };
-		uint8_t alpha{ 0 };
+		uint8_t alpha{ 255 };
 	};
 
 	struct Pixel
@@ -45,16 +44,16 @@ namespace BMP
 		void Print() // For debugging puposes
 		{
 			int w = 12;
-			cout.width(w);
-			cout << left << "Signature: " << right << signature << endl;
-			cout.width(w);
-			cout << left << "File size: " << right << file_size << " Bytes" << endl;
-			cout.width(w);
-			cout << left << "Reserved 1: " << right << reserved1 << endl;
-			cout.width(w);
-			cout << left << "Reserved 2: " << right << reserved2 << endl;
-			cout.width(w);
-			cout << left << "Offset: " << right << offset_data << endl << endl;
+			std::cout.width(w);
+			std::cout << std::left << "Signature: " << std::right << signature << "\n";
+			std::cout.width(w);
+			std::cout << std::left << "File size: " << std::right << file_size << " Bytes\n";
+			std::cout.width(w);
+			std::cout << std::left << "Reserved 1: " << std::right << reserved1 << "\n";
+			std::cout.width(w);
+			std::cout << std::left << "Reserved 2: " << std::right << reserved2 << "\n";
+			std::cout.width(w);
+			std::cout << std::left << "Offset: " << std::right << offset_data << "\n\n";
 		}
 	};
 
@@ -92,7 +91,7 @@ namespace BMP
 	public: // change to protected later
 		FileHeader file_header;
 		Infoheader info_header;
-		vector<BYTE> vec_pixels;
+		std::vector<BYTE> vec_pixels;
 		const char* filename;
 		BIT_DEPTH bit_depth;
 
