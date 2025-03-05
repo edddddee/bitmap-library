@@ -1,13 +1,9 @@
 # BMP
 
-### C++ header-only library creating, reading, editing and saving Bitmap-files (.bmp).
+### C++ Lightweight header-only library for creating, reading, editing and saving bitmaps (.bmp)
 
-- Read and write to pixels directly
-- Draw routines for primitives (line, rectangle, circle, triangle)
-
-
-### Can be used for...
-- digital image processing and image editing
+- Easily read and write to pixels directly
+- Includes a few draw routines for primitives (line, rectangle, circle, triangle)
 
 # Documentation
 ## Data types
