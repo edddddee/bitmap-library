@@ -4,18 +4,19 @@
 #include <limits>
 #include <cmath>
 #include <complex>
-#include <omp.h>
-#include <gmpxx.h>
+#include <chrono>
 
-int IterMandelbrot(mpf_class a, mpf_class b, int maxIter = 1000)
+#include <omp.h>
+
+int IterMandelbrot(double a, double b, int maxIter = 1000)
 {
     int n = 0;
-    mpf_class re_z{0};
-    mpf_class im_z{0};
-    while (n < maxIter && re_z * re_z + im_z * im_z > 4)
+    double re_z{0};
+    double im_z{0};
+    while (n < maxIter && re_z * re_z + im_z * im_z < 4)
     {
         n++;
-        mpf_class prev_re_z(re_z);
+        double prev_re_z(re_z);
         re_z = re_z * re_z - im_z * im_z + a;
         im_z = 2 * prev_re_z * im_z + b;
     }
@@ -24,15 +25,15 @@ int IterMandelbrot(mpf_class a, mpf_class b, int maxIter = 1000)
 
 struct Frame
 {
-    mpf_class x_center{};
-    mpf_class y_center{};
-    mpf_class x_width{};
-    mpf_class y_height{};
+    double x_center{};
+    double y_center{};
+    double x_width{};
+    double y_height{};
     int frame_w{};
     int frame_h{};
     int max_iter{};
 
-    Frame(mpf_class xc, mpf_class yc, mpf_class xw, mpf_class yh, int w, int h, int max_iter)
+    Frame(double xc, double yc, double xw, double yh, int w, int h, int max_iter)
         : x_center(xc), y_center(yc), x_width(xw), y_height(yh), frame_w(w), frame_h(h), max_iter(max_iter)
     {
     }
@@ -42,18 +43,18 @@ struct Frame
         const int n_pixels = frame_h * frame_w;
         std::vector<int> iter_data(n_pixels);
 
-        mpf_class dx(this->x_width / mpf_class(this->frame_w));
-        mpf_class dy(this->y_height / mpf_class(this->frame_h));
-        mpf_class x = this->x_center - 0.5 * this->x_width;
-        mpf_class y = this->y_center + 0.5 * this->y_height;
+        double dx(this->x_width / double(this->frame_w));
+        double dy(this->y_height / double(this->frame_h));
+        double x = this->x_center - 0.5 * this->x_width;
+        double y = this->y_center + 0.5 * this->y_height;
 
         #pragma omp parallel for
         for (int i = 0; i < n_pixels; i++)
         {
             int px = i % frame_w;
             int py = i / frame_w;
-            mpf_class a(x + px * dx);
-            mpf_class b(y - py * dy);
+            double a(x + px * dx);
+            double b(y - py * dy);
             iter_data[i] = IterMandelbrot(a, b, this->max_iter);
         }
         return iter_data;
@@ -62,16 +63,29 @@ struct Frame
 
 int main()
 {
-    const int WIDTH = 500 * 1;
-    const int HEIGHT = 500 * 1;
-    const mpf_class xc = 0.5 * (-0.750222 - 0.749191);
-    const mpf_class yc = 0.5 * (0.031161 + 0.031752);
-    const mpf_class xw = 0.750222 - 0.749191;
-    const mpf_class yh = xw;
-    const int max_iter = 1000;
+    using std::chrono::duration;
+    using std::chrono::duration_cast;
+    using std::chrono::high_resolution_clock;
+    using std::chrono::milliseconds;
+
+    auto t0 = high_resolution_clock::now();
+
+    const int WIDTH = 1<<12;
+    const int HEIGHT = 1<<12;
+    const double xc = -0.5;
+    const double yc = 0;
+    const double xw = 3;
+    const double yh = 3;
+    const int max_iter = 64;
 
     Frame frame(xc, yc, xw, yh, WIDTH, HEIGHT, max_iter);
     auto iter_data = frame.generate();
+
+    auto t1 = high_resolution_clock::now();
+    auto ms_taken = duration_cast<milliseconds>(t1 - t0);
+
+    std::println("Performed in {}", ms_taken);
+
     BMP::Bitmap image("mandelbrot.bmp", WIDTH, HEIGHT, false);
 
     #pragma omp parallel for
