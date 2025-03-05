@@ -50,15 +50,15 @@ struct Pixel
 ## Functions
 **Read, Write and Save file**
 ```C++
-bool Bitmap::Read(const char *fn); // Läser in en filen
-bool Bitmap::Write(const char *fn) const; // Sparar den nuvarande bilden i minnet till en fil
-bool Bitmap::Save() const { return Write(filename); } // Sparar över den nuvarande bilden i samma fil som laddats in
+bool Bitmap::Read(const char *fn); // Reads the bitmap "fn" into memory
+bool Bitmap::Write(const char *fn) const; // Saves the current bitmap to the file "fn"
+bool Bitmap::Save() const; // Saves the current bitmap to the path currently stored in Bitmap's field "filename"
 ```
 **Setters**
 ```C++
-void Bitmap::SetPixel(int x, int y, const Color &color); // Ändrar en pixels färg
-void Bitmap::SetBitDepth(const BIT_DEPTH &bd); // Ändrar bitdjupet i bilden
-void Bitmap::SetFileName(const char *fn) { filename = fn; } // Ändrar filens namn
+void Bitmap::SetPixel(int x, int y, const Color &color); // Set a pixel's color
+void Bitmap::SetBitDepth(const BIT_DEPTH &bd); // Set bit depth
+void Bitmap::SetFileName(const char *fn) { filename = fn; } // Set file name
 ```
 **Getters**
 ```C++
@@ -70,31 +70,31 @@ BIT_DEPTH Bitmap::GetBitDepth() const;
 ```
 **Draw routines**
 ```C++
-// Fyller hela bilden av en viss färg.
+// Sets all pixels to the provided color
 void Bitmap::Fill(const Color &color); 
 
-// Ritar en linje från (sx, sy) till (ex, ey)
-// Använder Bresenham's line algorithm (https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
+// Draws a line from (sx, sy) to (ex, ey)
+// Implements Bresenham's line algorithm (https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
 void Bitmap::DrawLine(int sx, int sy,int ex, int ey, Color color); 
 
-// Ritar en icke ifylld rektangel
+// Draws a non-filled rectangle
 void Bitmap::DrawRect(const int &x, const int &y,const int &w, const int &h,const Color &color);
 
-// Ritar en ifylld rektangel
+// Draws a filled rectangle
 void Bitmap::FillRect(const int &x, const int &y,const int &w, const int &h,const Color &color); 
 
-// Ritar en icke ifylld cirkel
-// Använder Bresenham's circle algorithm (https://iq.opengenus.org/bresenhams-circle-drawing-algorithm/)
+// Draws a non-filled circle
+// Implements Bresenham's circle algorithm (https://iq.opengenus.org/bresenhams-circle-drawing-algorithm/)
 void Bitmap::DrawCircle(const int &xc, const int &yc,const int &r,const Color &color);
 
-// Ritar en ifylld cirkel
+// Draws a filled circle
 void Bitmap::FillCircle(const int &xc, const int &yc,const int &r,const Color &color);
 
-// Ritar en icke ifylld triangel
+// Draws a non-filled triangle
 void Bitmap::DrawTriangle(const int &x1, const int &y1,const int &x2, const int &y2,const int &x3, const int &y3,const Color &color);
 
-// Ritar en ifylld triangel
-// Använder Bresenham's triangle rasterization algorithm (http://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html#algo2)
+// Draws a filled triangle
+// Implements Bresenham's triangle rasterization algorithm (http://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html#algo2)
 void Bitmap::FillTriangle(const int &x1, const int &y1,const int &x2, const int &y2,const int &x3, const int &y3,const Color &color); 
  ```
  
