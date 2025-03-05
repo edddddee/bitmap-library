@@ -1,26 +1,26 @@
 # BMP
 
-### C++ datastruktur för att skapa, läsa, redigera och spara Bitmap-filer (.bmp).
+### C++ header-only library creating, reading, editing and saving Bitmap-files (.bmp).
 
-- Läsa och ändra färg på enskilda pixlar
-- Metoder för att rita primitiva former (linje, rektangel, cirkel, triangel)
+- Read and write to pixels directly
+- Draw routines for primitives (line, rectangle, circle, triangle)
 
 
-### Kan användas för...
-- digital bildbehandling och bildredigering (av bmp-bilder)
+### Can be used for...
+- digital image processing and image editing
 
-# Dokumentation
-## Datatyper
+# Documentation
+## Data types
 **Bitmap**
 
-Konstruktorer som laddar in bitmap-filen från *fn* i minnet.
+Constructors reading the bitmap file *fn* into memory.
 ```C++
 Bitmap(const char *fn);
 Bitmap(const char *fn, const uint32_t &w, const uint32_t &h, bool alpha = true);
 ```
 **Vertex** 
 
-Kan användas till olika ritrutiner men alla funktioner har varianter some endast tar x- och y-koordinaterna var för sig som argument.
+Just an (x, y) coordinate pair. Draw functions are overloaded to also accept vertices if one prefers these.
 ```C++
 struct Vertex {
   int x;
@@ -29,7 +29,7 @@ struct Vertex {
 ```
 **Color**
 
-Beskriver en 24- eller 32-bitars färg.
+Representing a 24- or 32-bit color value.
 ```C++
 struct Color
 {
@@ -41,7 +41,7 @@ struct Color
 ```
 **Pixel**
 
-Beskriver pixelns läge i bilden och dess färgvärde.
+Stores pixel coordinate and color value.
 ```C++
 struct Pixel
 {
@@ -51,8 +51,8 @@ struct Pixel
 };
 ```
 
-## Funktioner
-**Läsa/spara fil**
+## Functions
+**Read, Write and Save file**
 ```C++
 bool Bitmap::Read(const char *fn); // Läser in en filen
 bool Bitmap::Write(const char *fn) const; // Sparar den nuvarande bilden i minnet till en fil
@@ -102,9 +102,9 @@ void Bitmap::DrawTriangle(const int &x1, const int &y1,const int &x2, const int 
 void Bitmap::FillTriangle(const int &x1, const int &y1,const int &x2, const int &y2,const int &x3, const int &y3,const Color &color); 
  ```
  
- **Draw routines, vertex-varianten**
+ **Draw routines, vertex-overloads**
  
- Motsvarar ovanstående funktioner, endast funktionsargumenten skiljer.
+ Just the overloaded version of the functions above, accepting vertices as arguments instead of the raw x and y values.
  ```C++
 void Bitmap::DrawLine(const Vertex &vStart, const Vertex &vEnd, const Color &color);
 void Bitmap::DrawRect(const Vertex &vTopLeft, const Vertex &vSize, const Color &color);
@@ -115,14 +115,14 @@ void Bitmap::DrawTriangle(const Vertex &v1, const Vertex &v2, const Vertex &v3, 
 void Bitmap::FillTriangle(Vertex v1, Vertex v2, Vertex v3, const Color &color);
 ```
 
-**Övrigt**
+**Miscellaneous**
 
-Laddar in data direkt från en byte-array. Kan vara användbart t.ex. för att förenkla interoperationer med andra program eller bibliotek.
+Reads data directly from a byte array. Useful for facilitating interoperations with other libraries or projects.
 ```C++
 void Bitmap::LoadFromByteArray(uint8_t *data, int n);
 ```
 
-# Exempelanvändning
+# Example usage: reading a bitmap from file, drawing a circle on it and saving it to a new file.
 ```C++
 #include "bmp.h"
 int main() {
