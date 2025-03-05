@@ -123,7 +123,7 @@ void Bitmap::LoadFromByteArray(uint8_t *data, int n);
 ```
 
 # Example usage
-### Reading a bitmap from file, drawing a circle on it and saving it to a new file:
+### Reading a bitmap from file, drawing a circle on it and saving it to a new file
 ```C++
 #include "bmp.h"
 int main() {
@@ -138,3 +138,7 @@ int main() {
   return 0;
 }
 ```
+### Create an image of the mandelbrot set (see [examples/mandelbrot](https://github.com/edddddee/bitmap-library/tree/master/examples/mandelbrot))
+
+<img src="https://github.com/edddddee/bitmap-library/blob/master/examples/mandelbrot/mandelbrot.bmp" alt="Description" style="width: 600px;">
+
