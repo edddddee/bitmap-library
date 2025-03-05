@@ -123,7 +123,9 @@ void Bitmap::LoadFromByteArray(uint8_t *data, int n);
 ```C++
 #include "bmp.h"
 int main() {
-  // Load into memory
+  // Create a bitmap with the filename "image.bmp".
+  // WARNING: if "image.bmp" already exists, it will be overwritten
+  // by a call to Save() or Write("image.bmp") 
   BMP::Bitmap my_bmp = BMP::Bitmap("image.bmp");
   
   // Put a filled red circle at x=200, y=200 with radius 50
