@@ -122,7 +122,8 @@ Reads data directly from a byte array. Useful for facilitating interoperations w
 void Bitmap::LoadFromByteArray(uint8_t *data, int n);
 ```
 
-# Example usage: reading a bitmap from file, drawing a circle on it and saving it to a new file.
+# Example usage
+### Reading a bitmap from file, drawing a circle on it and saving it to a new file:
 ```C++
 #include "bmp.h"
 int main() {
