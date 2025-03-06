@@ -1,6 +1,6 @@
 # BMP
 
-### C++ Lightweight header-only library for creating, reading, editing and saving bitmaps (.bmp)
+### C++ Lightweight header-only library for creating, reading, editing and saving bitmaps
 
 - Easily read and write to pixels directly
 - Includes a few draw routines for primitives (line, rectangle, circle, triangle)
