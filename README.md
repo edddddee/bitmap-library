@@ -16,7 +16,7 @@ Bitmap(const char *fn, const uint32_t &w, const uint32_t &h, bool alpha = true);
 ```
 **Vertex** 
 
-Just an (x, y) coordinate pair. Draw functions are overloaded to also accept vertices if one prefers these.
+Just a (x, y) coordinate pair. Draw functions are overloaded to also accept vertices if one prefers these.
 ```C++
 struct Vertex {
   int x;
